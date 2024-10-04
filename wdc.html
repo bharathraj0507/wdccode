@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OpenWeatherMap WDC</title>
+    <script src="https://cdn.jsdelivr.net/npm/jquery"></script>
+    <script src="https://tableau.github.io/webdataconnector/tableauwdc-2.3.1.js"></script>
+</head>
+<body>
+    <script>
+        tableau.registerConnector({
+            getSchema: function(schemaCallback) {
+                var cols = [
+                    { id: "city", dataType: tableau.dataTypeEnum.string },
+                    { id: "temperature", dataType: tableau.dataTypeEnum.float },
+                    { id: "weather", dataType: tableau.dataTypeEnum.string }
+                ];
+                var tableSchema = {
+                    id: "weatherData",
+                    alias: "OpenWeatherMap Data",
+                    columns: cols
+                };
+                schemaCallback([tableSchema]);
+            },
+            getData: function(table, doneCallback) {
+                var city = "London"; // Change city as needed
+                var apiKey = "77affa1ec21c4d1727a2aac49f26bc94"; // Your OpenWeatherMap API key
+                var url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`;
+
+                $.ajax({
+                    url: url,
+                    method: "GET",
+                    success: function(data) {
+                        var tableData = [{
+                            city: data.name,
+                            temperature: data.main.temp,
+                            weather: data.weather[0].description
+                        }];
+                        doneCallback(tableData);
+                    },
+                    error: function(err) {
+                        tableau.abortWithError("Error fetching data: " + err);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
